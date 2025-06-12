@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, TextField, Button, Avatar, Typography, Paper, IconButton, useTheme } from '@mui/material';
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Avatar, 
+  Typography, 
+  Paper, 
+  IconButton, 
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import { useChat } from '../contexts/ChatContext';
@@ -7,12 +17,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { mockUsers } from '../api/mockData';
 
 const ChatWindow: React.FC = () => {
-  const { currentChat, messages, sendMessage } = useChat();
+const { currentChat, messages, sendMessage } = useChat();
   const { user } = useAuth();
   const [message, setMessage] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const getParticipant = () => {
     if (!currentChat) return null;
@@ -46,16 +57,16 @@ const ChatWindow: React.FC = () => {
   };
 
   const receivedMessageStyle = {
-  bgcolor:'#2d7a45',
-  color: '#ffffff',
-  borderRadius: '18px 18px 18px 4px'
-};
+    bgcolor:'#2d7a45',
+    color: '#ffffff',
+    borderRadius: '18px 18px 18px 4px'
+  };
 
-const sentMessageStyle = {
-  bgcolor: 'primary.main',
-  color: '#ffffff',
-  borderRadius: '18px 18px 4px 18px'
-};
+  const sentMessageStyle = {
+    bgcolor:'#1976d2',
+    color: '#ffffff',
+    borderRadius: '18px 18px 4px 18px'
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -82,14 +93,14 @@ const sentMessageStyle = {
     <Box
       display="flex"
       flexDirection="column"
-      height="95%"
-      p={2}
+      height={isMobile ? 'calc(100vh - 66px)' : '95%'}
+      p={isMobile ? 1 : 2}
     >
       {participant && (
-        <Box display="flex" alignItems="center" mb={2} p={2} borderBottom="1px solid #eee">
+        <Box display="flex" alignItems="center" mb={2} p={isMobile ? 1 : 2} borderBottom={`1px solid ${theme.palette.divider}`}>
           <Avatar src={participant.avatar} />
           <Typography 
-            variant="h6" 
+            variant={isMobile ? "subtitle1" : "h6"}
             ml={2}
             color={theme.palette.mode === 'dark' ? 'text.primary' : 'text.primary'}
           >
@@ -112,6 +123,7 @@ const sentMessageStyle = {
             '&::-webkit-scrollbar-thumb': {
               backgroundColor: theme.palette.mode === 'dark' ? 'grey.600' : 'grey.400',
             },
+            px: isMobile ? 0.5 : 2,
           }}
       >
         {messages.map((msg) => (
@@ -120,12 +132,13 @@ const sentMessageStyle = {
             display="flex"
             justifyContent={msg.senderId === user?.id ? 'flex-end' : 'flex-start'}
             mb={2}
+            px={isMobile ? 0.5 : 2}
           >
             <Paper
               elevation={1}
               sx={{
-                  p: 2,
-                  maxWidth: '70%',
+                  p: isMobile ? 1.5 : 2,
+                  maxWidth: isMobile ? '90%' : '70%',
                   ...(msg.senderId === user?.id ? sentMessageStyle : receivedMessageStyle)
                 }}
             >
@@ -158,12 +171,12 @@ const sentMessageStyle = {
         alignItems="center" 
         sx={{
           bgcolor: theme.palette.mode === 'dark' ? 'transparent' : 'background.paper',
-          p: 2,
+          p: isMobile ? 1 : 2,
           borderTop: `1px solid ${theme.palette.divider}`,
         }}
       >
-        <IconButton component="label">
-          <AttachFileIcon />
+        <IconButton component="label" size={isMobile ? "small" : "medium"}>
+          <AttachFileIcon fontSize={isMobile ? "small" : "medium"} />
           <input type="file" hidden onChange={handleFileChange} />
         </IconButton>
         <TextField
@@ -176,20 +189,22 @@ const sentMessageStyle = {
           multiline
           maxRows={4}
           sx={{ mr: 1 }}
+          size={isMobile ? "small" : "medium"}
         />
         <Button
           variant="contained"
           color="primary"
           onClick={handleSendMessage}
           disabled={!message.trim() && !file}
-          endIcon={<SendIcon />}
+          endIcon={!isMobile && <SendIcon />}
+          size={isMobile ? "small" : "medium"}
         >
-          Send
+          {isMobile ? <SendIcon fontSize="small" /> : "Send"}
         </Button>
       </Box>
       {file && (
-        <Box mt={1}>
-          <Typography variant="caption">
+        <Box mt={1} px={isMobile ? 1 : 2}>
+          <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', color: theme.palette.text.primary, fontWeight:700 }}>
             Selected file: {file.name}
             <Button size="small" onClick={() => setFile(null)} sx={{ ml: 1 }}>
               Remove

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Box, TextField, Button, Typography, Paper } from '@mui/material';
+import { Box, TextField, Button, Typography, Paper, useMediaQuery } from '@mui/material';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('test@chat.com');
@@ -9,6 +9,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useMediaQuery('(max-width:600px)');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +28,16 @@ const Login: React.FC = () => {
       alignItems="center"
       minHeight="100vh"
       bgcolor="background.default"
+      px={isMobile ? 2 : 0}
     >
-      <Paper elevation={3} sx={{ padding: 4, width: 400 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          padding: isMobile ? 3 : 4, 
+          width: isMobile ? '100%' : 400 
+        }}
+      >
+        <Typography variant={isMobile ? "h5" : "h4"} align="center" gutterBottom>
           Chat App Login
         </Typography>
         {error && (
@@ -45,6 +53,7 @@ const Login: React.FC = () => {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            size={isMobile ? "small" : "medium"}
           />
           <TextField
             label="Password"
@@ -54,12 +63,13 @@ const Login: React.FC = () => {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            size={isMobile ? "small" : "medium"}
           />
           <Button
             type="submit"
             variant="contained"
             fullWidth
-            size="large"
+            size={isMobile ? "medium" : "large"}
             sx={{ mt: 2 }}
           >
             Login

@@ -12,7 +12,11 @@ import {
 import { useChat } from '../contexts/ChatContext';
 import { mockUsers } from '../api/mockData';
 
-const ChatList: React.FC = () => {
+interface ChatListProps {
+  onSelectChat?: () => void;
+}
+
+const ChatList: React.FC<ChatListProps> = ({ onSelectChat }) => {
   const { chats, currentChat, selectChat } = useChat();
   const theme = useTheme();
 
@@ -24,8 +28,15 @@ const ChatList: React.FC = () => {
     return mockUsers.find(user => user.id === participantId);
   };
 
+  const handleSelect = (chatId: string) => {
+    selectChat(chatId);
+    if (onSelectChat) {
+      onSelectChat();
+    }
+  };
+
   return (
-    <List>
+    <List sx={{ overflow: 'auto', height: 'calc(100vh - 56px)' }}>
       {chats.map(chat => {
         const participant = getParticipant(chat.id, '1');
         if (!participant) return null;
@@ -35,14 +46,14 @@ const ChatList: React.FC = () => {
             key={chat.id}
             disablePadding
             sx={{
-                backgroundColor: currentChat?.id === chat.id 
-                  ? (theme.palette.mode === 'dark' ? 'grey.800' : 'action.selected')
-                  : 'transparent',
-              }}
+              backgroundColor: currentChat?.id === chat.id 
+                ? (theme.palette.mode === 'dark' ? 'grey.800' : 'action.selected')
+                : 'transparent',
+            }}
           >
             <ListItemButton
               selected={currentChat?.id === chat.id}
-              onClick={() => selectChat(chat.id)}
+              onClick={() => handleSelect(chat.id)}
               sx={{
                 '&:hover': {
                   backgroundColor: 'action.hover',
@@ -65,6 +76,7 @@ const ChatList: React.FC = () => {
                   <Typography
                     variant="body2"
                     color={theme.palette.mode === 'dark' ? 'text.secondary' : 'text.secondary'}
+                    noWrap
                   >
                     {chat.lastMessage
                       ? `${chat.lastMessage.content.substring(0, 30)}...`
