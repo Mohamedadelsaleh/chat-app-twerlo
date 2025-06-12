@@ -104,7 +104,10 @@ const getBotResponse = (message: string): string => {
   const lowerMsg = message.toLowerCase();
   
   if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
-    return 'Hello there! How can I help you today?';
+    return 'Hello there! How are you today?';
+  }
+    if (lowerMsg.includes('good') || lowerMsg.includes('fine') || lowerMsg.includes('well')) {
+    return 'Great to hear that! How can I help you today?';
   }
   if (lowerMsg.includes('how are you')) {
     return "I'm just a bot, but I'm functioning well! Thanks for asking.";
