@@ -30,15 +30,15 @@
 ## App-structure
 A responsive and accessible Chat interface for Chat apps built with React and TypeScript.
     
-src/
-├── api/               # Mock API services
-├── components/        # Reusable UI components
-├── contexts/          # React contexts
-├── pages/             # Page components
-├── types/             # TypeScript interfaces
-├── utils/             # Utility functions
-├── App.tsx            # Main app component
-└── index.tsx          # Entry point
+    src/
+    ├── api/               # Mock API services
+    ├── components/        # Reusable UI components
+    ├── contexts/          # React contexts
+    ├── pages/             # Page components
+    ├── types/             # TypeScript interfaces
+    ├── utils/             # Utility functions
+    ├── App.tsx            # Main app component
+    └── index.tsx          # Entry point
     
 ## Features
 
