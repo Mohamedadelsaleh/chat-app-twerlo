@@ -106,7 +106,7 @@ const getBotResponse = (message: string): string => {
   if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
     return 'Hello there! How are you today?';
   }
-    if (lowerMsg.includes('good') || lowerMsg.includes('fine') || lowerMsg.includes('well')) {
+  if (lowerMsg.includes('good') || lowerMsg.includes('fine') || lowerMsg.includes('well')) {
     return 'Great to hear that! How can I help you today?';
   }
   if (lowerMsg.includes('how are you')) {
@@ -117,6 +117,15 @@ const getBotResponse = (message: string): string => {
   }
   if (lowerMsg.includes('weather')) {
     return 'The weather is always perfect in the virtual world!';
+  }
+  if (lowerMsg.includes('thanks') || lowerMsg.includes('thank you') || lowerMsg.includes('great')) {
+    return 'Great to hear that! any other thing can I help you with?';
+  }
+  if (lowerMsg.includes('No thanks') || lowerMsg.includes('no') || lowerMsg.includes('nan')) {
+    return 'Okay, Goodbye!';
+  }
+  if (lowerMsg.includes('bye') || lowerMsg.includes('goodbye')) {
+    return 'Goodbye! Have a great day!';
   }
   
   return "I'm not sure I understand. Can you try asking something else?";
