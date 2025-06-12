@@ -22,17 +22,14 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
 useEffect(() => {
   if (currentChat) {
     const savedMessages = localStorage.getItem(`chatAppMessages_${currentChat.id}`);
-    if (savedMessages) {
-      const parsedMessages = JSON.parse(savedMessages);
-
-      const uniqueMessages = parsedMessages.filter(
-        (msg: Message, index: number, self: Message[]) =>
-          index === self.findIndex((m: Message) => m.id === msg.id)
-      );
-      setMessages(uniqueMessages);
-    } else {
-      setMessages([]);
-    }
+    const parsedMessages = savedMessages ? JSON.parse(savedMessages) : [];
+    
+    // Filter out any potential duplicates or invalid messages
+    const validMessages = parsedMessages.filter((msg: Message) => 
+      msg && msg.id && msg.content && msg.timestamp
+    );
+    
+    setMessages(validMessages);
   }
 }, [currentChat]);
 
@@ -41,47 +38,39 @@ useEffect(() => {
     setCurrentChat(chat);
   };
 
-  const saveMessage = (message: Message) => {
-    if (messages.some(m => m.id === message.id)) return;
-
-    setMessages(prev => [...prev, message]);
+const saveMessage = (message: Message) => {
+  // First update the messages state
+  setMessages(prev => {
+    const newMessages = [...prev, message];
     
-    setChats(prev => {
-      const updatedChats = prev.map(chat => {
-        if (chat.id === message.receiverId || 
-            (chat.participants.includes(message.senderId) && chat.participants.includes(message.receiverId))) {
-          return { ...chat, lastMessage: message };
-        }
-        return chat;
-      });
-
-      localStorage.setItem('chatAppChats', JSON.stringify(updatedChats));
-      localStorage.setItem(`chatAppMessages_${currentChat?.id}`, JSON.stringify([...messages, message]));
-      
-      return updatedChats;
+    // Then save to localStorage
+    if (currentChat) {
+      localStorage.setItem(
+        `chatAppMessages_${currentChat.id}`, 
+        JSON.stringify(newMessages)
+      );
+    }
+    
+    // Update last message in chats
+    const updatedChats = chats.map(chat => {
+      if (chat.id === currentChat?.id) {
+        return { ...chat, lastMessage: message };
+      }
+      return chat;
     });
-  };
+    
+    localStorage.setItem('chatAppChats', JSON.stringify(updatedChats));
+    setChats(updatedChats);
+    
+    return newMessages;
+  });
+};
 
 const sendMessage = async (content: string, receiverId: string, isBroadcast = false, media?: File) => {
-  if (!user) return;
-
-  if (media) {
-    const total = media.size;
-    let loaded = 0;
-    const chunkSize = total / 10;
-    
-    const progressInterval = setInterval(() => {
-      loaded += chunkSize;
-      if (loaded >= total) {
-        loaded = total;
-        clearInterval(progressInterval);
-      }
-    }, 200);
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
-  }
-
-  const newMessage: Message = {
+  if (!user || !currentChat) return;
+  if (!user || isBroadcast) return;
+  // Create and save user's message immediately
+  const userMessage: Message = {
     id: uuidv4(),
     senderId: user.id,
     receiverId,
@@ -94,8 +83,9 @@ const sendMessage = async (content: string, receiverId: string, isBroadcast = fa
     } : undefined
   };
 
-  saveMessage(newMessage);
+  saveMessage(userMessage);
 
+  // If sending to the bot, simulate response after delay
   if (receiverId === '4') {
     setTimeout(() => {
       const botResponse: Message = {
@@ -132,10 +122,26 @@ const getBotResponse = (message: string): string => {
 const broadcastMessage = async (content: string, receiverIds: string[]) => {
   if (!user) return;
 
+  // Create a unique broadcast ID for tracking
   const broadcastId = uuidv4();
   const timestamp = new Date();
 
+  // Save to each recipient's chat
   receiverIds.forEach(receiverId => {
+    // Find or create the chat with this recipient
+    const chatId = [user.id, receiverId].sort().join('-');
+    let chat = chats.find(c => c.id === chatId);
+    
+    if (!chat) {
+      // Create new chat if it doesn't exist
+      chat = {
+        id: chatId,
+        participants: [user.id, receiverId]
+      };
+      setChats(prev => [...prev, chat!]);
+    }
+
+    // Create the broadcast message
     const newMessage: Message = {
       id: `${broadcastId}-${receiverId}`,
       senderId: user.id,
@@ -144,7 +150,18 @@ const broadcastMessage = async (content: string, receiverIds: string[]) => {
       timestamp,
       isBroadcast: true
     };
-    saveMessage(newMessage);
+
+    // Save to the recipient's chat storage
+    const chatKey = `chatAppMessages_${chatId}`;
+    const existingMessages: Message[] = JSON.parse(localStorage.getItem(chatKey) || '[]');
+    localStorage.setItem(chatKey, JSON.stringify([...existingMessages, newMessage]));
+
+    // Update last message in chats list
+    const updatedChats = chats.map(c => 
+      c.id === chatId ? { ...c, lastMessage: newMessage } : c
+    );
+    localStorage.setItem('chatAppChats', JSON.stringify(updatedChats));
+    setChats(updatedChats);
   });
 };
 
