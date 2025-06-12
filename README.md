@@ -18,6 +18,7 @@
 * [Setup](#setup)
 * [OpenSourse](#opensourse)
 * [Pictures](#pictures)
+* [Record](#record)
 * [Authors](#authors)
 * [Built With](#built-with)
 ***
